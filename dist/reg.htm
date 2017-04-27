@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>注册</title>
+	<style>
+		body{
+			color: white;
+		}
+	</style>
+</head>
+<body>
+	<script src="js/react.min.js"></script>
+	<script src="js/react-dom.min.js"></script>
+	<script src="js/browser.min.js"></script>
+	<script src="js/ajax.js"></script>
+   	<script type="text/babel">      
+		var InputElement = React.createClass({
+			style2:{
+				width: 200,
+				height: 30,
+				borderRadius: 5,
+				paddingLeft: 5
+			},
+			style1:{
+				marginTop: 15
+			},
+			
+			render:function(){
+				return <div style={this.style1}>
+					<label for="">{this.props.children}</label>
+					<input ref="input" onBlur={this.props.validate} style={this.style2} type={this.props.type} placeholder={this.props.placeholder} />
+					<span style={this.props.style} ref="info">{this.props.info}</span>
+				</div>
+			}
+		}); 
+		var Reg = React.createClass({
+			style2:{
+				width: 425,
+				height: 340,
+				margin: "250px 0 0 800px",
+				border: "2px solid #1e211a",
+				background: "#1e212a",
+				borderRadius: 10
+			},
+			style1:{
+				display: "inline-block",
+				background: "#098cc9",
+				padding: "4px 60px",
+				marginTop: 30,
+				borderRadius: 2,
+				textAlign: "center",
+				color: "white",
+				fontWeight: 600,
+				cursor: "pointer",
+				marginLeft: 120
+			},
+			getInitialState:function(){
+				return {
+					username:{},
+					pwd:{},
+					confirmPwd:{},
+					email:{}
+				}
+			},
+			validateUsername:function(ele){
+				console.log(ele.target.value);
+				if(/^\w{6,20}$/.test(ele.target.value)){
+					ajax({
+                        type:"get",
+                        url:"/users/find",
+                        data:{
+                            username:ele.target.value
+                        },
+                        success:(data)=>{
+                            if(data.length > 0){
+                                this.setState({
+                                    username:{
+                                        info:"　重名",
+                                        style:{
+                                            color:"red",
+                                            fontSize: 14
+                                        },
+                                        isValid:false
+                                    }
+                                });
+                            }else{
+                                this.setState({
+                                    username:{
+                                        info:"　√",
+                                        style:{
+                                            color:"green"
+                                        },
+                                        isValid:true
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }else{
+                    this.setState({
+                        username:{
+                            info:"　× 格式错误",
+                            style:{
+                                color:"red",
+                                fontSize:14
+                            },
+                            isValid:false
+                        }
+
+                    });
+                }
+                console.log(this.state);
+            },
+			validatePwd:function(ele){
+				
+				if(/^.{6,20}$/.test(ele.target.value)){
+					this.setState({
+						pwd:{
+							info:"　√",
+							style:{
+								color:"green"
+							},
+							isValid:true				
+						}
+					});
+				}else{
+					this.setState({
+						pwd:{
+							info:"　× 格式错误！",
+							style:{
+								color:"red",
+								fontSize: 14
+							},
+							isValid:false
+						}						
+					});
+				}
+			},
+			validateConfirmPwd:function(ele){
+				var value = ele.target.value;
+				console.log(this.refs.pwd.refs.input.value);
+				var pwdValue = this.refs.pwd.refs.input.value;
+				if(value == pwdValue && /^.{6,20}$/.test(ele.target.value)){
+					this.setState({
+						confirmPwd:{
+							info:"　√",
+							style:{
+								color:"green"
+							},
+							isValid:true					
+						}
+					});
+				}else{
+					this.setState({
+						confirmPwd:{
+							info:"　× 密码不一致！",
+							style:{
+								color:"red",
+								fontSize: 14
+							},
+							isValid:false
+						}						
+					});
+				}
+			},
+			validateEmail:function(ele){
+				
+				if(/^[0-9a-zA-Z]{3,6}[@][0-9a-zA-Z]{2,3}[.][0-9a-zA-Z]{2,3}$/.test(ele.target.value)){
+					this.setState({
+						email:{
+							info:"　√",
+							style:{
+								color:"green"
+							},
+							isValid:true					
+						}
+					});
+				}else{
+					this.setState({
+						email:{
+							info:"　× 格式错误！",
+							style:{
+								color:"red",
+								fontSize: 14
+							},
+							isValid:false
+						}						
+					});
+				}
+			},
+			register:function(){
+				if(this.state.username.isValid && this.state.pwd.isValid && this.state.confirmPwd.isValid && this.state.email.isValid){
+					alert("success!");
+					ajax({
+                        type:"post",
+                        url:"/users/add",
+                        data:{
+                            username:this.refs.username.refs.input.value,
+                            pwd:this.refs.pwd.refs.input.value
+                        },
+                        success:(data)=>{
+                            window.location = "login.htm";
+                        }
+                    });
+				}else{
+					alert("error!");
+				}
+			},
+			render:function(){
+				return <form style={this.style2}>
+					<h2 style={{textAlign:"center"}}>注册</h2>
+					<InputElement ref="username" validate={this.validateUsername} style={this.state.username.style} info={this.state.username.info} type="text" placeholder="请输入字母数字_6-20位">　　用户名： </InputElement>
+					<InputElement ref="pwd" validate={this.validatePwd} style={this.state.pwd.style} info={this.state.pwd.info} type="password" placeholder="请输入任意字符6-20位">　　密　码： </InputElement>
+
+					<InputElement validate={this.validateConfirmPwd} style={this.state.confirmPwd.style} info={this.state.confirmPwd.info} type="password" placeholder="请输入一致的密码">　确认密码： </InputElement>
+					<InputElement validate={this.validateEmail} style={this.state.email.style} info={this.state.email.info}  type="email" placeholder="请输入××@××.××类型的邮箱">　　邮　箱： </InputElement>
+					<input type="button" onClick={this.register} style={this.style1} value="注册" action="login.htm"/> 
+				</form>
+			}
+		}); 
+		ReactDOM.render(<Reg></Reg>,document.getElementsByTagName("body")[0]);
+	</script>
+
+</body>
+</html>

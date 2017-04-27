@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Test React1</title>
+    <style>
+        .redFont{
+            color:red;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+    </div>
+    <script src="js/react.min.js"></script>
+    <script src="js/react-dom.min.js"></script>
+    <script src="js/browser.min.js"></script>
+    <script type="text/babel">
+        // var h1Element = React.createElement("h1",null,"标题");
+        // var pElement = React.createElement("p",{className:"redFont"},"内容");
+        // var divElement = React.createElement("div",null,h1Element,pElement);
+        // ReactDOM.render(divElement,document.getElementById("content"));
+
+
+        var H1Element = React.createClass({
+            style:function(){
+                return {
+                    color:this.props.color,
+                    border:"1px solid red"
+                }
+            },
+            render:function(){
+                return <h1 style={this.style()}>标题</h1>
+            }
+        });
+        var PElement = React.createClass({
+            render:function(){
+                return <p className="redFont" style={{fontSize:"20px"}}>内容</p>
+            }
+        });
+        var ItemElement = React.createClass({
+            render:function(){
+                console.log(this.props);
+                return <li style={{color:this.props.color}}>{this.props.children}</li>
+            }
+        });
+        var ListElement = React.createClass({
+            render:function(){
+                var ary = ["列表1","列表2","列表3","列表4","列表5"];
+                // var lis = [];
+                // for(var i = 0;i < ary.length;i++){
+                //     lis.push(<li>{ary[i]}</li>);
+                // }
+                var lis = ary.map(function(ele){
+                    return <ItemElement color="red">{ele}</ItemElement>
+                });
+                return <ul>
+                        {lis}
+                    </ul>
+            }
+        })
+        var DivElement = React.createClass({
+            render:function(){
+                return <div>
+                    <H1Element color="blue"></H1Element>
+                    <PElement></PElement>
+                    <ListElement></ListElement>
+                </div>
+            }
+        });
+        ReactDOM.render(<DivElement />,document.getElementById("content"));
+    </script>
+</body>
+</html>

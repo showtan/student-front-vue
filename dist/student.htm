@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>学生管理</title>
+</head>
+<body>
+	<div id="content">
+		<Student></Student>
+	</div>
+	<script src="js/vue.min.js"></script>
+	<script src="js/ajax.js"></script>
+	<script>
+		var InputEle = {
+			template:"<div>\
+				<label><slot></slot></label>\
+				<input :value='value' @input='updateValue' type='text'/>\
+			</div>",
+			props:['value'],
+			methods:{
+				updateValue:function(e){
+					this.$emit('input',e.target.value);
+				}
+			}
+		}
+
+		var GenderEle = {
+			template:"<div>\
+				<label>性别：</label>\
+				男<input type='radio' name='gender' value='男' :check=\"value=='男'\" @change='updateValue' />\
+				女<input type='radio' name='gender' value='女' :check=\"value=='女'\" @change='updateValue' />\
+			</div>",
+			props:["value"],
+			methods:{
+				updateValue:function(e){
+					this.$emit('input',e.target.value);
+				}
+			}
+		}
+
+
+		var AddStu = {
+			template:"<div>\
+				<h3>增加</h3>\
+				<InputEle v-model='student.name'>姓名：</InputEle>\
+				<InputEle v-model='student.age'>年龄：</InputEle>\
+				<GenderEle v-model='student.gender'></GenderEle>\
+				<input type='button' value='增加' @click='add' />\
+			</div>",
+			props:['show'],
+			data:function(){
+				return{
+					student:{
+						name:"",
+						age:"",
+						gender:""
+					}				
+				}			
+			},
+			methods:{
+				add:function(){
+					ajax({
+						type:'post',
+						url:'/students/add',
+						data:{
+							name:this.student.name,
+							age:this.student.age,
+							gender:this.student.gender
+						},
+						success:function(){
+							this.show();
+							this.student.name="";
+							this.student.age="";
+						}.bind(this)
+					});
+				}
+			},
+			components:{
+				InputEle,
+				GenderEle
+			},
+		}
+
+		var UpdateStu = {
+			template:"<div>\
+				<h3>修改</h3>\
+				<InputEle v-model='student.name'>姓名：</InputEle>\
+				<InputEle v-model='student.age'>年龄：</InputEle>\
+				<GenderEle v-model='student.gender'></GenderEle>\
+				<input type='button' value='修改' @click='update' />\
+			</div>",
+			props:['show','student'],
+			methods:{
+				update:function(){
+					ajax({
+						type:'get',
+						url:'/students/update',
+						data:{
+							_id:this.student._id,
+							name:this.student.name,
+							age:this.student.age,
+							gender:this.student.gender
+						},
+						success:function(){
+							this.show();
+						}.bind(this)
+					});
+				}
+			},
+			components:{
+				InputEle,
+				GenderEle
+			}
+		}
+
+		
+		var StuItem = {
+			template:"<tr>\
+				<td>{{student.name}}</td>\
+				<td>{{student.age}}</td>\
+				<td>{{student.gender}}</td>\
+				<td>\
+					<input type='button' value='修改' @click='showById(student._id)'/>\
+					<input type='button' value='删除' @click='del(student._id)'/>\
+				</td>\
+			</tr>",
+			props:['setStudent','student','show'],
+			methods:{
+				showById:function(id){	
+					ajax({
+						type:'post',
+						url:'/students/find',
+						data:{
+							_id:id
+						},
+						success:function(data){
+							this.setStudent(data);
+						}.bind(this)
+					});
+				},
+				del:function(id){
+					ajax({
+						type:'post',
+						url:'/students/del',
+						data:{
+							_id:id
+						},
+						success:function(){
+							this.show();
+						}.bind(this)
+					});
+				}
+			}
+		}
+
+		var StuTable = {
+			template:"<div>\
+				<table border=1>\
+					<thead>\
+						<tr><td>姓名</td><td>年龄</td><td>性别</td><td>操作</td></tr>\
+					</thead>\
+					<tbody>\
+						<StuItem v-for='stu in students' :student='stu' :show='show' :setStudent='setStudent'></StuItem>\
+					</tbody>\
+				</table>\
+			</div>",
+			props:['setStudent','students','show'],
+			components:{
+				StuItem
+			}
+		}
+
+
+
+		var SearchStu = {
+			template:"<div>\
+				<h3>搜索</h3>\
+				<InputEle v-model='name.value'>姓名：</InputEle>\
+				<input type='button' @click='search' value='搜索' />\
+			</div>",
+			props:['show'],
+			components:{
+				InputEle
+			},
+			data:function(){
+				return{
+					name:{
+						value:''
+					}					
+				}				
+			},
+			methods:{
+				search:function(page){
+					console.log(page)
+					var obj = {name:this.name.value};
+					this.show(1,obj);
+			        // ajax({
+			        //     type:"post",
+			        //     url:"/students/find",
+			        //     data:{
+			        //         name:this.student.name
+			        //     },
+			        //     success:function(data){
+			        //     	console.log(data.length);
+			        //     	if (data.length>0) {
+			        //     		this.show();
+			        //     	}	                    	
+			        //     }.bind(this)
+			        // });
+			    }
+			}
+		}
+
+
+		var Page = {
+			template:"<div>\
+				<a @click='prev'>上一页</a>\
+				<span>{{this.data.curpage}}/{{this.data.maxpage}}</span>\
+				<a @click='next'>下一页</a>\
+			</div>",
+			props:['data','show','searchData'],
+			methods:{
+				prev:function(){
+					if(this.data.curpage > 1){
+						var newpage = this.data.curpage - 1;
+						if (this.searchData.name!=undefined) {
+							this.show(page,searchData);
+						}else{
+			            	this.show(newpage);
+			            }
+			        }
+				},
+				next:function(){
+					if(this.data.curpage < this.data.maxpage){
+						var newpage = this.data.curpage + 1;
+			            if (this.searchData.name!=undefined) {
+							this.show(page,searchData);
+						}else{
+			            	this.show(newpage);
+			            }
+			        }
+				}				
+			}
+		}
+
+		var Student = {
+			template:"<div>\
+				<AddStu :show='show' :student='student'></AddStu>\
+				<UpdateStu :student='student' :show='show'></UpdateStu>\
+				<SearchStu :show='show'></SearchStu>\
+				<StuTable :students='data.rows' :show='show' :setStudent='setStudent'></StuTable>\
+				<Page :searchData='searchData' :data='data' :show='show'></Page>\
+			</div>",
+			data:function(){
+				return {
+					data:{},
+					student:{},
+					searchData:{}
+				}				
+			},
+			created:function(){
+				this.show();
+			},
+			methods:{
+				show:function(page,searchPage){
+					var dataJson = {
+						page:page,
+						rows:5
+					};
+					if(searchPage!=undefined){
+						dataJson = {
+							page:page,
+							rows:5,
+							name:searchPage.name
+						};
+						this.searchData = searchPage;				
+					}
+					ajax({
+						type:"post",
+						url:"/students/find",
+						data:dataJson,
+						success:function(data){
+							this.data = data;
+						}.bind(this)
+					});
+				},
+				setStudent:function(student){
+					this.student = student;
+				}
+			},
+			components:{
+				UpdateStu,
+				AddStu,
+				SearchStu,
+				StuTable,
+				Page
+			}
+		}
+
+		var content = new Vue({
+			el:"#content",
+			components:{
+				Student
+			}
+		});
+
+	</script>
+</body>
+</html>

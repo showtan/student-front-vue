@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>学生管理</title>
+
+</head>
+<body>
+
+    <div id="content"></div>
+    <script src="js/react.min.js"></script>
+    <script src="js/react-dom.min.js"></script>
+    <script src="js/browser.min.js"></script>
+    <script src="js/ajax.js"></script>
+
+    <script type="text/babel">
+    // 重用组建input
+        var InputElement = React.createClass({
+            render:function(){
+                return <div>
+                    <label htmlFor="">{this.props.children}</label>
+                    <input type={this.props.type}/>
+                    <span></span>
+                </div>
+            }
+        });
+        // 单选框
+        var GenderElement = React.createClass({
+            render:function(){
+                return <div>
+                    <label htmlFor="">性别：</label>
+                    <input ref="male" type="radio" name="gender" value="男"/><label htmlFor="">男</label>
+                    <input ref="female" type="radio" name="gender" value="女"/><label htmlFor="">女</label>
+                </div>
+            }
+        });
+        // 增加
+        var AddStudent = React.createClass({
+            add:function(){
+                var name = this.refs.name.refs.input.value;
+                var age = this.refs.age.refs.input.value;
+                var gender;
+                if(this.refs.gender.refs.male.checked){
+                    gender="男";
+                }else if(this.refs.gender.refs.female.checked){
+                    gender="女";
+                }
+                ajax({
+                    type:"post",
+                    url:"/students/add",
+                    data:{
+                        name:name,
+                        age:age,
+                        gender:gender
+                    },
+                    success:function(){
+                        this.props.show();
+                    }.bind(this)
+                });
+            },
+            render:function(){
+                return <div>
+                    <h3>增加</h3>
+                    <InputElement type="text">姓名：</InputElement>
+                    <InputElement type="text">年龄：</InputElement>
+                    <GenderElement></GenderElement>
+                    <input type="button" value="增加" onClick={this.add}/>
+                </div>
+            }
+        });
+       
+        var UpdateStudent = React.createClass({
+            render:function(){
+                return <div>
+                    <h3>修改</h3>
+                    <InputElement type="text">姓名：</InputElement>
+                    <InputElement type="text">年龄：</InputElement>
+                    <GenderElement></GenderElement>
+                    <input type="button" value="修改"/>
+                </div>
+            }
+        });
+        
+        var SearchStudent = React.createClass({
+            render:function(){
+                return <div>
+                    <h3>搜索</h3>
+                    <input type="text"/>
+                    <input type="button" value="搜索"/>
+                </div>
+            }
+        });
+        
+        var StudentTable = React.createClass({
+            render:function(){
+                var arr = this.props.students.map(function(ele){
+                    return <StudentItem student={ele}></StudentItem>
+                }.bind(this));
+                return <div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>性别</th>
+                                <th>年龄</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {arr}
+                        </tbody>
+                    </table>
+                </div>
+            }
+        });
+       
+        var StudentItem = React.createClass({
+            del:function(){
+                ajax({
+                    type:"post",
+                    url:"/students/del",
+                    data:{
+                        _id:this.props.student._id
+                    },
+                    success:function(){
+                        this.props.show();
+                    }.bind(this)
+                });
+            },
+            render:function(){
+                return <tr>
+                    <td>{this.props.student.name}</td>
+                    <td>{this.props.student.gender}</td>
+                    <td>{this.props.student.age}</td>
+                    <td>
+                        <input type="button" value="修改"/>
+                        <input type="button" onClick={this.del} value="删除"/>
+                    </td>
+                </tr>
+            }
+        });
+     
+        var Page = React.createClass({
+            render:function(){
+                return <div>
+                    <a href="#">上一页</a>
+                    <a href="#">下一页</a>
+                </div>
+            }
+        });
+
+     
+        var Student = React.createClass({
+            getInitialState:function(){
+                students:[]
+            },
+            componentWillMount:function(){
+                this.show();            
+            },
+            show:function(){
+                ajax({
+                    type:"get",
+                    url:"/students/find",
+                    success:function(data){
+                        this.setState({
+                            students:data
+                        });
+                    }.bind(this)
+                });
+            },
+            render:function(){
+                return <div>
+                <div><h1>学生管理</h1><a href="login.html">登陆</a><a href="reg.html">注册</a></div>
+
+                    <AddStudent show={this.show}></AddStudent>
+                    <UpdateStudent></UpdateStudent>
+                    <SearchStudent></SearchStudent>
+                    <StudentTable show={this.show} students={this.state.students}></StudentTable>
+                    <Page></Page>
+                </div>
+            }
+        });
+        ReactDOM.render(<Student></Student>,document.getElementById("content"));
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div id="content">
+    </div>
+    <script src="js/react.min.js"></script>
+    <script src="js/react-dom.min.js"></script>
+    <script src="js/browser.min.js"></script>
+    <script type="text/babel">
+        var LetterItem = React.createClass({
+            style:{
+                float:"left",
+                backgroundColor:"red",
+                marginLeft:10,
+                fontSize:40,
+                width:50,
+                height:70,
+                color:"blue"
+            },
+            render:function(){
+                return <li style={this.style}>{this.props.children}<input type={"text"}/></li>
+            }
+        });
+        var Letter = React.createClass({
+            style:{
+                listStyle:"none",
+                padding:0
+            },
+            render:function(){
+                var letterAry = ["A","B","C","D","E","F","G"];
+                var newAry = letterAry.map(function(ele){
+                    return <LetterItem>{ele}</LetterItem>
+                });
+                return <ul style={this.style}>
+                    {newAry}
+                </ul>
+            }
+        });
+        ReactDOM.render(<Letter></Letter>,document.getElementById("content"));
+    </script>
+</body>
+</html>

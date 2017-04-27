@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>登录</title>
+	<style>
+		body{
+			color: white;
+
+		}
+	</style>
+</head>
+<body>
+	<script src="js/react.min.js"></script>
+	<script src="js/react-dom.min.js"></script>
+	<script src="js/browser.min.js"></script>
+	<script src="js/ajax.js"></script>
+
+
+
+	<script type="text/babel">
+
+		var InputElement = React.createClass({
+			style2:{
+				width: 200,
+				height: 30,
+				borderRadius: 5,
+				paddingLeft: 5
+			},
+			style1:{
+				marginTop:20
+			},
+			render:function(){
+				return <div style={this.style1}>
+					<label for="">{this.props.children}</label>
+					<input ref="input" onBlur={this.props.validate} style={this.style2} type={this.props.type}  placeholder={this.props.placeholder}/>
+					<span style={this.props.style} ref="info">{this.props.info}</span>
+				</div>
+			}
+		}); 
+		var Login = React.createClass({
+			style2:{
+				width: 400,
+				height: 250,
+				margin: "300px 0 0 800px",
+				border: "2px solid #1e211a",
+				background: "#1e212a",
+				borderRadius: 10
+			},
+			style1:{				
+				display: "inline-block",
+				background: "#098cc9",
+				padding: "4px 8px",
+				marginTop: 30,
+				borderRadius: 2,
+				textAlign: "center",
+				color: "white",
+				fontWeight: 600,
+				textDecoration: "none",
+				cursor: "pointer"
+			},
+			getInitialState:function(){
+				return {
+					username:{},
+					pwd:{}
+				}
+			},
+
+
+			validateUsername:function(ele){
+				console.log(ele.target.value);
+				if(/^\w{6,20}$/.test(ele.target.value)){
+					this.setState({
+                        username:{
+                            info:"　√",
+                            style:{
+                                color:"green",
+                            },
+                            isValid:true
+                        }
+
+                    });
+                }else{
+                    this.setState({
+                        username:{
+                            info:"　× 格式错误",
+                            style:{
+                                color:"red",
+                                fontSize:14
+                            },
+                            isValid:false
+                        }
+
+                    });
+                }
+                console.log(this.state);
+            },
+
+
+			validatePwd:function(ele){
+				
+				if(/^.{6,20}$/.test(ele.target.value)){
+					this.setState({
+						pwd:{
+							info:"　√",
+							style:{
+								color:"green"
+							},
+							isValid:true				
+						}
+					});
+				}else{
+					this.setState({
+						pwd:{
+							info:"　× 格式错误！",
+							style:{
+								color:"red",
+								fontSize: 14
+							},
+							isValid:false
+						}						
+					});
+				}
+			},
+			login:function(){
+				console.log(this.state.username.isValid)
+				console.log(this.state.pwd.isValid)
+				if(this.state.username.isValid && this.state.pwd.isValid){
+					ajax({
+		                type:"post",
+		                url:"/users/find",
+		                data:{
+		                    username:this.refs.username.refs.input.value,
+		                    pwd:this.refs.pwd.refs.input.value,
+							findType:"exact"
+		                },
+		                success:(data)=>{
+			                if(data.length > 0){
+			                	window.location = "students.htm";
+			                }else{
+								alert("输入错误！");
+			                }
+		                    
+		                }
+		            });
+				} else {
+					console.log('Error');
+				}
+			},
+			
+			render:function(){
+				return <div style={this.style2}>
+					<h2 style={{textAlign:"center"}}>登录</h2>
+					<InputElement ref="username" validate={this.validateUsername} style={this.state.username.style} info={this.state.username.info} type="text" placeholder="请输入字母数字_6-20位">　　用户名： </InputElement>
+					<InputElement ref="pwd" validate={this.validatePwd} style={this.state.pwd.style} info={this.state.pwd.info} type="password" placeholder="请输入任意字符6-20位">　　密　码： </InputElement>
+
+					　　　　　　　　　　　　　　　　<input type="button" onClick={this.login} style={this.style1} value="确定"/>
+				</div>
+			}
+		}); 
+		ReactDOM.render(<Login></Login>,document.getElementsByTagName("body")[0]);
+	</script>
+</body>
+</html>

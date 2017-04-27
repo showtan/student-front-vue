@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>登录</title>
+</head>
+<body>
+	<div id="content">
+		<Login></Login>
+	</div>
+
+	<script src="js/vue.min.js"></script>
+	<script src="js/ajax.js"></script>
+	<script>
+		// \为转义符   也可以转义"" value=\"注册\"
+		var InputEle = {
+			template:"<div>\
+				<label><slot></slot></label>\
+				<input :value='value' :style='styleObject' @input='updateValue' type='text'/>\
+				<span>{{info}}</span>\
+			</div>",
+			props:['value','info'],
+			methods:{
+				updateValue:function(e){
+					this.$emit("input",e.target.value);
+				}
+			},
+			data:function(){
+				return{
+					styleObject:{
+						marginBottom: '15px',
+						borderRadius: '3px',
+						width: '300px',
+						height: '30px'
+					}
+				}
+			}
+		}
+
+		//验证方法在父组件写
+		var Login = {		
+			template:"<div>\
+				<form :style='styleObjectForm'>\
+					<h1 :style='styleObjectH'>登录</h1>\
+					<InputEle v-model='username.value' :info='username.info'>　用户名：　</InputEle>\
+					<InputEle v-model='pwd.value' :info='pwd.info'>　密　码：　</InputEle>\
+					<input type='button' @click='login' :style='styleObject' value='确定'/>\
+				</form>\
+			</div>",
+			data: function(){
+				return{
+					styleObject: {
+					    color: 'red',
+					    display: 'inlineBlock',
+					    margin: '25px 0 0 130px',
+					    padding: '8px 110px',
+					    fontSize: '18px',
+					    fontWeight: 600,
+					    color: 'white',
+					    background: '#098cc9',
+					    cursor: 'pointer',
+					    border: 'none'
+				  	},
+				  	styleObjectH:{
+				  		textAlign: 'center'
+				  	},
+				  	styleObjectForm:{
+				  		width: '500px',
+			            height: '280px',
+			            margin: "250px 0 0 800px",
+			            border: "2px solid #1e211a",
+			            background: "#1e212a",
+			            borderRadius: '10px',
+			            color: "white",
+				  	},
+				  	username:{
+				  		value:'',
+				  		info:'',
+				  		isValid:false
+				  	},
+				  	pwd:{
+				  		value:'',
+				  		info:'',
+				  		isValid:false
+				  	}
+				}			  	
+			},
+			watch:{
+				"username.value":function(value){
+					if (/^\w{6,20}$/.test(value)) {
+						this.username.info="√";
+						this.username.isValid=true;
+					}else{
+						this.username.info="格式不正确";
+						this.username.isValid=false;						
+					}
+				},
+				"pwd.value":function(value){
+					if (/^[0-9a-zA-Z]{6,20}$/.test(value)) {
+						this.pwd.info="√";
+						this.pwd.isValid=true;
+					}else{
+						this.pwd.info="格式不正确";
+						this.pwd.isValid=false;
+					}
+				}
+			},
+			methods:{
+				login:function(){
+					if(this.username.isValid && this.pwd.isValid){
+				        ajax({
+				            type:"post",
+				            url:"/users/find",
+				            data:{
+				                username:this.username.value,
+				                pwd:this.pwd.value
+				            },
+				            success:(data)=>{
+				                if(data.length > 0){
+				                	window.location="student.htm";
+				                    alert("帅哥，恭喜你登陆成功！");
+				                }else{
+				                    alert("小子，你输错了！");
+				                }
+				                
+				            }
+				        });
+				    } 
+				}
+			},
+			components:{
+				InputEle:InputEle
+			}
+		}
+		var content = new Vue({
+			el:"#content",
+			components:{
+				Login:Login
+			}
+		});
+	</script>
+</body>
+</html>	

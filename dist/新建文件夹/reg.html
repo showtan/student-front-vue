@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>注册</title>
+</head>
+<body>
+    <div id="content"></div>
+    <script src="js/react.min.js"></script>
+    <script src="js/react-dom.min.js"></script>
+    <script src="js/browser.min.js"></script>
+    <script src="js/ajax.js"></script>
+    <script type="text/babel">
+        var Reg = React.createClass({
+            getInitialState:function(){
+                return {
+                    username:{},
+                    pwd:{},
+                    confirmPwd:{}
+                }
+            },
+
+            validateUsername:function(e){
+                if(/^\w{6,20}$/.test(e.target.value)){
+                    ajax({
+                        type:"get",
+                        url:"/users/find",
+                        data:{
+                            username:e.target.value
+                        },
+                        success:(data)=>{
+                            if(data.length > 0){
+                                this.setState({
+                                    username:{
+                                        info:"重名",
+                                        style:{
+                                            color:"red"
+                                        },
+                                        isValid:false
+                                    }
+                                });
+                            }else{
+                                this.setState({
+                                    username:{
+                                        info:"√",
+                                        style:{
+                                            color:"green"
+                                        },
+                                        isValid:true
+                                    }
+                                });
+                            }
+                        }
+                    });
+
+
+                }else{
+                    this.setState({
+                        username:{
+                            info:"格式不正确",
+                            style:{
+                                color:"red"
+                            },
+                            isValid:false
+                        }
+
+                    });
+                }
+                console.log(this.state);
+            },
+            validatePwd:function(e){
+                if(/^.{6,20}$/.test(e.target.value)){
+                    this.setState({
+                        pwd:{
+                            info:"√",
+                            style:{
+                                color:"green"
+                            },
+                            isValid:true
+                        }
+                    });
+                }else{
+                    this.setState({
+                        pwd:{
+                            info:"格式不正确",
+                            style:{
+                                color:"red"
+                            },
+                            isValid:false
+                        }
+
+                    });
+                }
+                console.log(this.state);
+            },
+            validateConfirmPwd:function(e){
+                var value = e.target.value;
+                var pwdValue = this.refs.pwd.refs.input.value;
+                if(value == pwdValue){
+                    this.setState({
+                        confirmPwd:{
+                            info:"√",
+                            style:{
+                                color:"green"
+                            },
+                            isValid:true
+                        }
+                    });
+                }else{
+                    this.setState({
+                        confirmPwd:{
+                            info:"密码不一致",
+                            style:{
+                                color:"red"
+                            },
+                            isValid:false
+                        }
+                    });
+                }
+            },
+            reg:function(){
+                if(this.state.username.isValid
+                    && this.state.pwd.isValid
+                    && this.state.confirmPwd.isValid){
+                    alert("suc");
+                    ajax({
+                        type:"post",
+                        url:"/users/add",
+                        data:{
+                            username:this.refs.username.refs.input.value,
+                            pwd:this.refs.pwd.refs.input.value
+                        },
+                        success:(data)=>{
+                            window.location = "login.html";
+                        }
+                    });
+
+                }else{
+                    alert("error");
+                }
+            },
+            render:function(){
+                return <div>
+                    <h1>注册</h1>
+                    <InputElement validate={this.validateUsername}
+                    style={this.state.username.style}
+                    info={this.state.username.info} type="text">用户名：</InputElement>
+
+                    <InputElement ref="pwd" validate={this.validatePwd}
+                    style={this.state.pwd.style}
+                    info={this.state.pwd.info}
+                     type="password">密码：</InputElement>
+
+                    <InputElement type="password" validate={this.validateConfirmPwd}
+                    style={this.state.confirmPwd.style}
+                    info={this.state.confirmPwd.info}
+                    >确认密码：</InputElement>
+                    <InputElement type="email">email：</InputElement>
+                    <input type="button" value="确定" onClick={this.reg}/>
+                </div>
+            }
+        });
+        var InputElement = React.createClass({
+
+
+            render:function(){
+                return <div>
+                    <label htmlFor="">{this.props.children}</label>
+                    <input ref="input" type={this.props.type} onBlur={this.props.validate}/>
+                    <span style={this.props.style} ref="info">{this.props.info}</span>
+                </div>
+            }
+        });
+        ReactDOM.render(<Reg></Reg>,document.getElementById("content"));
+
+    </script>
+</body>
+</html>
